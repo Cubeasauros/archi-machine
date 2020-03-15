@@ -45,6 +45,14 @@ class canvas():
             
             
     def draw_block(self,key):
+        
+        starttext=self.draw_offset_y + (self.blocks[key].height/2)
+        n=0
+        
+        for m in key:
+            self.canvas[int(starttext)][n+self.draw_offset_x + int(self.blocks[key].width/2)-len(key)]=m
+            n+=1
+        
         for m in range(0,self.blocks[key].width):
             self.canvas[self.draw_offset_y][m+self.draw_offset_x]=self.blocks[key].border_top
             self.canvas[self.draw_offset_y+self.blocks[key].height-1][m+self.draw_offset_x]=self.blocks[key].border_top
@@ -53,11 +61,6 @@ class canvas():
             self.canvas[m+self.draw_offset_y][self.draw_offset_x]=self.blocks[key].border_side
             self.canvas[m+self.draw_offset_y][self.draw_offset_x+self.blocks[key].width-1]=self.blocks[key].border_side        
         
-        starttext=self.draw_offset_y + (self.blocks[key].width/2)
-        n=0
-        for m in key:
-            self.canvas[int(starttext)][n+self.draw_offset_x+2]=m
-            n+=1
         
             
             
@@ -116,8 +119,11 @@ class Main_worker:
         self.width=20
         self.default_offset_x=2
         self.default_offset_y=2
-    def add_block(self,key,*value):
+        self.val_height_prev=0
+    def add_block(self,key,width,height):
         self.canvas.add_block(key,block())
+        self.canvas.blocks[key].width=int(width)
+        self.canvas.blocks[key].height=int(height)        
         self.canvas.draw_block(key)
     def display(self):
         self.printer.printit(self.canvas.canvas)
@@ -126,15 +132,25 @@ class Main_worker:
         
         print("resolving")
         if val.name!='none':
-            self.add_block(val.name)
+            if int(val.width)>(self.canvas.width-self.default_offset_x):
+                print("Width is too much")
+                return
+                
+            if (self.canvas.draw_offset_x+int(val.width))>self.canvas.width:
+                print("condition found true")
+                self.canvas.draw_offset_x=self.default_offset_x
+                self.canvas.draw_offset_y=self.val_height_prev+self.default_offset_y    #+self.canvas.draw_offset_y
+            
+            
+            
+            self.add_block(val.name,val.width,val.height)
             print("ok here")
             self.canvas.draw_offset_x=self.canvas.draw_offset_x+self.canvas.blocks[val.name].width+self.default_offset_x
             print("ok here")
             
-            if (self.canvas.draw_offset_x+self.canvas.blocks[val.name].width)>self.canvas.width:
-                print("condition found true")
-                self.canvas.draw_offset_x=self.default_offset_x
-                self.canvas.draw_offset_y=self.canvas.draw_offset_y + self.canvas.blocks[val.name].height+self.default_offset_y
+            if int(val.height)>self.val_height_prev:
+                self.val_height_prev=val.height
+            
             
         print("truth checking")
         if val.disp==True:
@@ -154,19 +170,8 @@ class Main_worker:
             f.close()
 
 
-
-
-'''
-Canvas=canvas()
-block_1=block()
-p=printer()
-Canvas.add_block('cpu',block_1)
-p.printit(Canvas.canvas)
-Canvas.draw_block('cpu')
-p.printit(Canvas.canvas)
-'''
-
 worker=Main_worker()
+
 print(''' 
             Architecture designer v1.0.0
       
