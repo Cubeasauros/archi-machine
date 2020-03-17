@@ -23,8 +23,9 @@ class canvas():
     def __init__(self):
         self.width=50
         self.height=30
+        self.expand_height=30
         self.blocks=dict()
-        self.canvas=[[]]
+        self.canvas=[]
         self.draw_offset_y=2
         self.draw_offset_x=2
         
@@ -33,6 +34,8 @@ class canvas():
     def add_block(self,key,value):
         self.blocks[key]=value
         self.blocks[key].key=key
+        self.blocks[key].x=self.draw_offset_x
+        self.blocks[key].y=self.draw_offset_y
         self.key_words=key.split()
     
     def generate_canvas(self):
@@ -41,8 +44,6 @@ class canvas():
             self.canvas.append([])
             for n in range(0,self.width):
                 self.canvas[m].append(' ')
-        self.canvas.pop()
-            
             
     def draw_block(self,key):
         
@@ -63,7 +64,17 @@ class canvas():
         
         
             
-            
+    
+    def expand_canvas(self):
+        
+        for m in range (0,self.expand_height):
+            self.canvas.insert(self.height-1,[])
+            for m in range(0,self.width):
+                self.canvas[self.height-1].append(' ')
+        
+        self.height+=self.expand_height
+        
+        
 class printer:
     def __init__(self):
         self.left_padding=20
@@ -100,6 +111,8 @@ class   block():
         self.border_side='|'
         self.value=''
         self.key=''
+        self.x=0
+        self.y=0
  
  
         
@@ -120,38 +133,47 @@ class Main_worker:
         self.default_offset_x=2
         self.default_offset_y=2
         self.val_height_prev=0
+        
     def add_block(self,key,width,height):
         self.canvas.add_block(key,block())
         self.canvas.blocks[key].width=int(width)
-        self.canvas.blocks[key].height=int(height)        
+        self.canvas.blocks[key].height=int(height)
+        self.blocks[key].x=self.draw_offset_x
+        self.blocks[key].y=self.draw_offset_y
         self.canvas.draw_block(key)
     def display(self):
         self.printer.printit(self.canvas.canvas)
         print()
     def resolve(self,val):
         
-        print("resolving")
+        print("resolving") 
         if val.name!='none':
             if int(val.width)>(self.canvas.width-self.default_offset_x):
                 print("Width is too much")
                 return
+            
+                
                 
             if (self.canvas.draw_offset_x+int(val.width))>self.canvas.width:
+                #debug test
                 print("condition found true")
                 self.canvas.draw_offset_x=self.default_offset_x
-                self.canvas.draw_offset_y=self.val_height_prev+self.default_offset_y    #+self.canvas.draw_offset_y
+                self.canvas.draw_offset_y=self.canvas.draw_offset_y + self.val_height_prev   #+self.canvas.draw_offset_y
+                print(" draw_offset_y is : " + str(self.canvas.draw_offset_y) )
+            
+            if self.canvas.draw_offset_y + int(val.height) >=self.canvas.height:
+                # debug-test
+                print("Y expanding")
+                self.canvas.expand_canvas()
             
             
             
             self.add_block(val.name,val.width,val.height)
-            print("ok here")
             self.canvas.draw_offset_x=self.canvas.draw_offset_x+self.canvas.blocks[val.name].width+self.default_offset_x
-            print("ok here")
-            
-            if int(val.height)>self.val_height_prev:
-                self.val_height_prev=val.height
+            self.val_height_prev=int(val.height)
             
             
+             
         print("truth checking")
         if val.disp==True:
             self.display()
@@ -170,33 +192,35 @@ class Main_worker:
             f.close()
 
 
+
 worker=Main_worker()
 
 print(''' 
-            Architecture designer v1.0.0
+                Architecture designer v1.0.0
       
          Something something all rights blah blah ...
       ===============================================
       
-      To start off enter block name in the terminal
-      like this :
-      -block BLOCK_NAME
+        To start off enter block name in the terminal
+        like this :
+       -block BLOCK_NAME
             
-      If you want to add parameters like block width use :
+       > If you want to add parameters like block width use :
            -block BLOCK_NAME  -width=20 -height=20 -value="cpu core"
       
-      To display the chart type in:
+       > To display the chart type in:
            -disp
            
-      To print to a file type in:(this has bugs)
+       > To print to a file type in:(this has bugs)
           -print
           
-      To exit the console type :
+       > To exit the console type :
           -exit 
           
           
     
           ''')
+
 
 exit=False
 while   exit==False:
