@@ -138,8 +138,8 @@ class Main_worker:
         self.canvas.add_block(key,block())
         self.canvas.blocks[key].width=int(width)
         self.canvas.blocks[key].height=int(height)
-        self.blocks[key].x=self.draw_offset_x
-        self.blocks[key].y=self.draw_offset_y
+        self.canvas.blocks[key].x=self.canvas.draw_offset_x
+        self.canvas.blocks[key].y=self.canvas.draw_offset_y
         self.canvas.draw_block(key)
     def display(self):
         self.printer.printit(self.canvas.canvas)
